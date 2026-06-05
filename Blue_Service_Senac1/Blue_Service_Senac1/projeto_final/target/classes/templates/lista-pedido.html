@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Isamar – Funcionário</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #f1f5fb;
+      font-family: 'Nunito', sans-serif;
+      color: #1a2340;
+    }
+
+    
+    header {
+      background: #2563eb;
+      color: #fff;
+      padding: 12px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(37,99,235,.35);
+      position: sticky; top: 0; z-index: 100;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 10px; }
+
+    .header-logo {
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,.2);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .header-logo svg { width: 20px; height: 20px; }
+
+    .header-title h1 { font-size: 1rem; font-weight: 800; line-height: 1.2; }
+    .header-title p  { font-size: .72rem; opacity: .8; }
+
+    .btn-sair {
+      background: rgba(255,255,255,.2);
+      border: none; border-radius: 10px;
+      padding: 8px 14px;
+      cursor: pointer; color: #fff;
+      font-family: 'Nunito', sans-serif;
+      font-size: .85rem; font-weight: 700;
+      display: flex; align-items: center; gap: 6px;
+      transition: background .2s; text-decoration: none;
+    }
+    .btn-sair:hover { background: rgba(255,255,255,.3); }
+    .btn-sair svg   { width: 16px; height: 16px; }
+
+    /* ── Main ── */
+    main { max-width: 900px; margin: 0 auto; padding: 28px 24px; }
+
+    /* ── Stats cards ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px; margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+      padding: 18px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .stat-label { font-size: .78rem; color: #718096; margin-bottom: 4px; }
+    .stat-value { font-size: 1.6rem; font-weight: 800; }
+    .stat-value.blue   { color: #2563eb; }
+    .stat-value.green  { color: #16a34a; }
+
+    .stat-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .stat-icon.blue  { background: #eff6ff; color: #2563eb; }
+    .stat-icon.green { background: #f0fdf4; color: #16a34a; }
+    .stat-icon svg   { width: 22px; height: 22px; }
+
+    
+    .section-title {
+      font-size: 1rem; font-weight: 800;
+      margin-bottom: 16px; color: #1a2340;
+    }
+
+    
+    .pedidos-lista { display: flex; flex-direction: column; gap: 14px; }
+
+    .pedido-card {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+      padding: 18px 20px;
+      transition: box-shadow .2s;
+    }
+    .pedido-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.11); }
+
+    .pedido-header {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; margin-bottom: 12px;
+    }
+
+    .pedido-id   { font-size: 1rem; font-weight: 800; }
+    .pedido-meta { font-size: .76rem; color: #718096; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+    .pedido-meta svg { width: 13px; height: 13px; }
+
+    .pedido-total-label { font-size: .72rem; color: #718096; text-align: right; }
+    .pedido-total-val   { font-size: 1.1rem; font-weight: 800; color: #2563eb; }
+
+    .pedido-itens { border-top: 1.5px solid #e2e8f0; padding-top: 12px; }
+    .pedido-itens-label { font-size: .78rem; font-weight: 700; color: #4a5568; margin-bottom: 8px; }
+
+    .pedido-item-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #f1f5fb;
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: .76rem; font-weight: 600;
+      color: #1a2340; margin: 0 4px 4px 0;
+    }
+    .pedido-item-pill svg { width: 12px; height: 12px; color: #2563eb; }
+
+    
+    .empty {
+      text-align: center; padding: 60px 0;
+      color: #a0aec0;
+    }
+    .empty svg { width: 56px; height: 56px; margin: 0 auto 12px; display: block; }
+    .empty p   { font-size: .9rem; }
+
+    @media (max-width: 600px) {
+      main   { padding: 20px 16px; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  
+  <header>
+    <div class="header-left">
+      <div class="header-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z"/>
+          <path d="M8 12s1.5 2 4 2 4-2 4-2"/>
+          <path d="M9 9h.01M15 9h.01"/>
+        </svg>
+      </div>
+      <div class="header-title">
+        <h1>Isamar – Funcionário</h1>
+        <p>Gerenciamento de Pedidos</p>
+      </div>
+    </div>
+    <a th:href="@{/login}" href="/login" class="btn-sair">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Sair
+    </a>
+  </header>
+
+  
+  <main>
+
+   
+    <div class="stats">
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Total de Pedidos</div>
+          <div class="stat-value blue" id="totalPedidos"
+               th:text="${listaPedido != null ? listaPedido.size() : 0}">0</div>
+        </div>
+        <div class="stat-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Faturamento Total</div>
+          <div class="stat-value green" id="faturamento"
+               th:text="'R$ ' + ${#aggregates.sum(listaPedido.![A04_valor_total])}">R$ 0,00</div>
+        </div>
+        <div class="stat-icon green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="1" x2="12" y2="23"/>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de pedidos -->
+    <div class="section-title">Pedidos Recentes</div>
+
+    <div class="pedidos-lista">
+
+      <div class="pedido-card" th:each="pedido : ${listaPedido}">
+        <div class="pedido-header">
+          <div>
+            <div class="pedido-id" th:text="'Pedido #' + ${pedido.A04_id_pedido}">Pedido #---</div>
+            <div class="pedido-meta">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+              </svg>
+              <span th:text="${pedido.cliente}">Nome do cliente</span>
+              <span>•</span>
+              <span th:text="${#dates.format(pedido.A04_data_pedido, 'dd/MM/yyyy')}">--/--/----</span>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div class="pedido-total-label">Total</div>
+            <div class="pedido-total-val"
+                 th:text="'R$ ' + ${#numbers.formatDecimal(pedido.A04_valor_total, 1, 2)}">
+              R$ 0,00
+            </div>
+          </div>
+        </div>
+
+        <div class="pedido-itens">
+          <div class="pedido-itens-label">Itens do Pedido:</div>
+          <span class="pedido-item-pill" th:each="item : ${pedido.itens}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span th:text="${item.A05_nome} + ' x' + ${item.A06_quantidade}">Produto x1</span>
+          </span>
+        </div>
+      </div>
+
+      
+      <div class="empty" th:if="${#lists.isEmpty(listaPedido)}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+        </svg>
+        <p>Nenhum pedido encontrado.</p>
+      </div>
+
+    </div>
+
+  </main>
+
+</body>
+</html>

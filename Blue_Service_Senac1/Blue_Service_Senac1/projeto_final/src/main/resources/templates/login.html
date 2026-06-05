@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login – Isamar Piscinas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    .wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+      width: 100%;
+      max-width: 360px;
+      padding: 24px;
+    }
+
+    .logo-wrap img {
+      max-width: 230px;
+      height: auto;
+      display: block;
+    }
+
+    .logo-text {
+      text-align: center;
+    }
+    .logo-text h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #2563eb;
+    }
+    .logo-text p {
+      font-size: .85rem;
+      color: #718096;
+      margin-top: 2px;
+    }
+
+    .msg-erro {
+      display: none;
+      width: 100%;
+      background: #fff5f5;
+      border: 1.5px solid #feb2b2;
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #c53030;
+      font-size: .85rem;
+      font-weight: 700;
+      text-align: center;
+    }
+    .msg-erro.show { display: block; }
+
+    .msg-sucesso {
+      display: none;
+      width: 100%;
+      background: #f0fff4;
+      border: 1.5px solid #9ae6b4;
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #276749;
+      font-size: .85rem;
+      font-weight: 700;
+      text-align: center;
+    }
+    .msg-sucesso.show { display: block; }
+
+    .fields {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 5px; }
+
+    .field label {
+      font-size: .82rem;
+      font-weight: 700;
+      color: #4a5568;
+      letter-spacing: .4px;
+    }
+
+    .input-wrap { position: relative; }
+
+    .input-wrap svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #a0aec0;
+      pointer-events: none;
+      width: 15px; height: 15px;
+    }
+
+    .input-wrap input {
+      width: 100%;
+      padding: 11px 12px 11px 36px;
+      border: 1.8px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: .92rem;
+      font-family: 'Nunito', sans-serif;
+      color: #1a2340;
+      background: #f8fafd;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+
+    .input-wrap input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.13);
+      background: #fff;
+    }
+
+    .input-wrap input.error {
+      border-color: #e53e3e;
+      box-shadow: 0 0 0 3px rgba(229,62,62,.12);
+    }
+
+    .error-msg {
+      display: none;
+      color: #e53e3e;
+      font-size: .76rem;
+      font-weight: 600;
+      padding-left: 3px;
+    }
+    .error-msg.show { display: block; }
+
+    .divisor {
+      width: 100%;
+      text-align: center;
+      font-size: .78rem;
+      color: #a0aec0;
+      font-weight: 700;
+      position: relative;
+    }
+    .divisor::before, .divisor::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 42%;
+      height: 1px;
+      background: #e2e8f0;
+    }
+    .divisor::before { left: 0; }
+    .divisor::after  { right: 0; }
+
+    .buttons {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn-entrar {
+      width: 100%;
+      padding: 12px;
+      background: #2563eb;
+      color: #fff;
+      font-family: 'Nunito', sans-serif;
+      font-size: .97rem;
+      font-weight: 800;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      letter-spacing: .5px;
+      transition: background .2s, transform .1s, box-shadow .2s;
+      box-shadow: 0 4px 14px rgba(37,99,235,.28);
+    }
+    .btn-entrar:hover  { background: #1d4ed8; }
+    .btn-entrar:active { transform: scale(.98); }
+
+    .btn-func {
+      width: 100%;
+      padding: 12px;
+      background: #16a34a;
+      color: #fff;
+      font-family: 'Nunito', sans-serif;
+      font-size: .97rem;
+      font-weight: 800;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      letter-spacing: .5px;
+      transition: background .2s, transform .1s, box-shadow .2s;
+      box-shadow: 0 4px 14px rgba(22,163,74,.28);
+    }
+    .btn-func:hover  { background: #15803d; }
+    .btn-func:active { transform: scale(.98); }
+
+    .btn-criar {
+      width: 100%;
+      padding: 11px;
+      background: #fff;
+      color: #2563eb;
+      font-family: 'Nunito', sans-serif;
+      font-size: .97rem;
+      font-weight: 700;
+      border: 2px solid #2563eb;
+      border-radius: 10px;
+      cursor: pointer;
+      letter-spacing: .3px;
+      transition: background .2s;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-criar:hover { background: #eff6ff; }
+
+    .hint {
+      font-size: .72rem;
+      color: #a0aec0;
+      text-align: center;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+
+    <div class="logo-text">
+<div class="logo-text">
+  <img src="/img/logo.jpg" alt="Isamar Piscinas" style="max-width:220px; height:auto;"/>
+</div>
+    </div>
+
+    <div class="msg-sucesso" id="msg-sucesso">✅ Cadastro realizado! Faça seu login.</div>
+    <div class="msg-erro"    id="msg-erro">Email ou senha incorretos.</div>
+
+    <form method="post" class="fields" id="formLogin" onsubmit="return validar()">
+
+      <div class="field">
+        <label for="email">Email</label>
+        <div class="input-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+          </svg>
+          <input type="email" id="email" name="email" placeholder="Digite seu email" autocomplete="email"/>
+        </div>
+        <span class="error-msg" id="email-err">⚠ Por favor, informe seu email.</span>
+      </div>
+
+      <div class="field">
+        <label for="senha">Senha</label>
+        <div class="input-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <input type="password" id="senha" name="senha" placeholder="Digite sua senha"/>
+        </div>
+        <span class="error-msg" id="senha-err">⚠ Por favor, informe sua senha.</span>
+      </div>
+
+      <div class="buttons">
+        <button type="submit" formaction="/usuario/login" class="btn-entrar">
+          Entrar como Cliente
+        </button>
+
+        <div class="divisor">ou</div>
+
+        <button type="submit" formaction="/funcionario/login" class="btn-func">
+          Entrar como Funcionário / Admin
+        </button>
+
+        <a th:href="@{/cadastro}" href="/cadastro" class="btn-criar">
+          Criar Conta
+        </a>
+      </div>
+
+    </form>
+
+   
+
+  </div>
+
+  <script>
+    if (window.location.search.includes('sucesso')) {
+      document.getElementById('msg-sucesso').classList.add('show');
+    }
+    if (window.location.search.includes('erro')) {
+      document.getElementById('msg-erro').classList.add('show');
+    }
+
+    function validar() {
+      const email    = document.getElementById('email');
+      const senha    = document.getElementById('senha');
+      const emailErr = document.getElementById('email-err');
+      const senhaErr = document.getElementById('senha-err');
+      let ok = true;
+
+      if (!email.value.trim()) {
+        email.classList.add('error');
+        emailErr.classList.add('show');
+        ok = false;
+      } else {
+        email.classList.remove('error');
+        emailErr.classList.remove('show');
+      }
+
+      if (!senha.value.trim()) {
+        senha.classList.add('error');
+        senhaErr.classList.add('show');
+        ok = false;
+      } else {
+        senha.classList.remove('error');
+        senhaErr.classList.remove('show');
+      }
+
+      return ok;
+    }
+
+    document.getElementById('email').addEventListener('input', function() {
+      if (this.value.trim()) {
+        this.classList.remove('error');
+        document.getElementById('email-err').classList.remove('show');
+      }
+    });
+    document.getElementById('senha').addEventListener('input', function() {
+      if (this.value.trim()) {
+        this.classList.remove('error');
+        document.getElementById('senha-err').classList.remove('show');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Isamar – Produtos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{min-height:100vh;background:#f1f5fb;font-family:'Nunito',sans-serif;color:#1a2340}
+    header{background:#2563eb;color:#fff;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(37,99,235,.35);position:sticky;top:0;z-index:100}
+    .hl{display:flex;align-items:center;gap:10px}
+    .hlogo{width:36px;height:36px;background:rgba(255,255,255,.2);border-radius:10px;display:flex;align-items:center;justify-content:center}
+    .hlogo svg{width:20px;height:20px}
+    .htitle h1{font-size:1rem;font-weight:800;line-height:1.2}
+    .htitle p{font-size:.72rem;opacity:.8}
+    .hr{display:flex;align-items:center;gap:8px}
+    .btn-cart{position:relative;background:rgba(255,255,255,.2);border:none;border-radius:10px;padding:8px 10px;cursor:pointer;color:#fff;transition:background .2s}
+    .btn-cart:hover{background:rgba(255,255,255,.3)}
+    .btn-cart svg{width:20px;height:20px;display:block}
+    .badge{position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:.65rem;font-weight:800;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center;border:2px solid #2563eb}
+    .badge.show{display:flex}
+    .btn-sair{background:rgba(255,255,255,.2);border:none;border-radius:10px;padding:8px 14px;cursor:pointer;color:#fff;font-family:'Nunito',sans-serif;font-size:.85rem;font-weight:700;display:flex;align-items:center;gap:6px;transition:background .2s;text-decoration:none}
+    .btn-sair:hover{background:rgba(255,255,255,.3)}
+    .btn-sair svg{width:16px;height:16px}
+    .tabs{background:#fff;border-bottom:1.5px solid #e2e8f0;padding:0 24px;display:flex;gap:4px}
+    .tab-btn{padding:12px 16px;background:none;border:none;border-bottom:2.5px solid transparent;font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:700;color:#718096;cursor:pointer;display:flex;align-items:center;gap:6px;transition:color .2s,border-color .2s}
+    .tab-btn svg{width:16px;height:16px}
+    .tab-btn.active{color:#2563eb;border-bottom-color:#2563eb}
+    main{max-width:1100px;margin:0 auto;padding:28px 24px}
+    .section{display:none}.section.active{display:block}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px}
+    .card{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);overflow:hidden;transition:transform .2s,box-shadow .2s}
+    .card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+    .card-icon{width:100%;height:110px;background:linear-gradient(135deg,#eff6ff,#dbeafe);display:flex;align-items:center;justify-content:center;font-size:3rem}
+    .card-body{padding:14px}
+    .card-name{font-size:.95rem;font-weight:800;margin-bottom:4px}
+    .card-desc{font-size:.78rem;color:#718096;margin-bottom:12px;line-height:1.4}
+    .card-footer{display:flex;align-items:center;justify-content:space-between}
+    .card-price{font-size:1.1rem;font-weight:800;color:#2563eb}
+    .btn-add{background:#2563eb;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-family:'Nunito',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .2s,transform .1s}
+    .btn-add:hover{background:#1d4ed8}.btn-add:active{transform:scale(.96)}
+    .btn-add svg{width:14px;height:14px}
+    .empty-state{text-align:center;padding:60px 0;color:#a0aec0}
+    .empty-state p{font-size:.9rem;margin-top:12px}
+    /* Pedidos */
+    .pedidos-lista{display:flex;flex-direction:column;gap:14px}
+    .pedido-card{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);padding:18px 20px}
+    .pedido-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+    .pedido-id{font-size:1rem;font-weight:800}
+    .pedido-data{font-size:.76rem;color:#718096;margin-top:3px}
+    .pedido-total-label{font-size:.72rem;color:#718096;text-align:right}
+    .pedido-total-val{font-size:1.1rem;font-weight:800;color:#2563eb}
+    .pedido-itens{border-top:1.5px solid #e2e8f0;padding-top:12px}
+    .pedido-itens-label{font-size:.78rem;font-weight:700;color:#4a5568;margin-bottom:8px}
+    .pedido-item-pill{display:inline-flex;align-items:center;gap:4px;background:#f1f5fb;border-radius:20px;padding:4px 10px;font-size:.76rem;font-weight:600;color:#1a2340;margin:0 4px 4px 0}
+    /* Modal carrinho */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:16px;z-index:200}
+    .overlay.open{display:flex}
+    .modal{background:#fff;border-radius:18px;width:100%;max-width:480px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+    .modal-header{padding:16px 20px;border-bottom:1.5px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between}
+    .modal-header h2{font-size:1.05rem;font-weight:800}
+    .btn-fechar{background:#f1f5fb;border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#4a5568;transition:background .2s}
+    .btn-fechar:hover{background:#e2e8f0}.btn-fechar svg{width:16px;height:16px}
+    .modal-body{flex:1;overflow-y:auto;padding:16px 20px}
+    .carrinho-vazio{text-align:center;padding:40px 0;color:#a0aec0;font-size:.9rem}
+    .carrinho-item{position:relative;display:flex;gap:12px;background:#f8fafd;border-radius:10px;padding:12px 40px 12px 12px;margin-bottom:10px}
+    .ci-info{flex:1}
+    .ci-nome{font-size:.9rem;font-weight:800}
+    .ci-preco{font-size:.85rem;font-weight:700;color:#2563eb;margin:3px 0}
+    .qty-wrap{display:flex;align-items:center;gap:8px;margin-top:6px}
+    .btn-qty{background:#e2e8f0;border:none;border-radius:6px;width:26px;height:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+    .btn-qty:hover{background:#cbd5e0}.btn-qty svg{width:12px;height:12px}
+    .qty-num{font-size:.9rem;font-weight:800;padding:0 4px}
+    .btn-rm{position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;color:#e53e3e;padding:4px;border-radius:6px;transition:background .2s}
+    .btn-rm:hover{background:#fee2e2}
+    .btn-rm svg{width:16px;height:16px}
+    .ci-sub{font-size:.85rem;font-weight:800;align-self:center}
+    .modal-footer{border-top:1.5px solid #e2e8f0;padding:14px 20px;background:#f8fafd}
+    .modal-total{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .modal-total span{font-size:.9rem;font-weight:700}
+    .modal-total strong{font-size:1.2rem;font-weight:800;color:#2563eb}
+    .btn-finalizar{width:100%;padding:12px;background:#16a34a;color:#fff;border:none;border-radius:10px;font-family:'Nunito',sans-serif;font-size:.97rem;font-weight:800;cursor:pointer;transition:background .2s;box-shadow:0 4px 14px rgba(22,163,74,.3)}
+    .btn-finalizar:hover{background:#15803d}
+    /* Toast */
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#1a2340;color:#fff;padding:12px 24px;border-radius:12px;font-size:.88rem;font-weight:700;transition:transform .3s;z-index:300;pointer-events:none}
+    .toast.show{transform:translateX(-50%) translateY(0)}
+    /* Toast de sucesso (verde) */
+    .toast-sucesso{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#16a34a;color:#fff;padding:14px 20px 14px 24px;border-radius:12px;font-size:.95rem;font-weight:700;transition:transform .3s;z-index:300;pointer-events:none;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(22,163,74,.35)}
+    .toast-sucesso.show{transform:translateX(-50%) translateY(0);pointer-events:auto}
+    .toast-sucesso-fechar{background:rgba(255,255,255,.25);border:none;border-radius:6px;width:26px;height:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;transition:background .2s}
+    .toast-sucesso-fechar:hover{background:rgba(255,255,255,.4)}
+    .toast-sucesso-fechar svg{width:13px;height:13px}
+    @media(max-width:600px){main{padding:20px 16px}.grid{grid-template-columns:1fr 1fr;gap:12px}}
+    @media(max-width:420px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+
+<input type="hidden" id="idCliente" 
+       th:value="${idCliente != null ? idCliente : 0}" 
+       value="0"/>
+
+<header>
+  <div class="hl">
+    <img src="/img/logo.jpg" alt="Isamar" style="height:40px; width:auto;"/>
+    <div class="htitle">
+      <h1>Isamar Piscinas</h1>
+      <p th:text="${cliente != null ? 'Olá, ' + cliente.nome : 'Produtos para piscinas'}">Produtos</p>
+    </div>
+  </div>
+  <div class="hr">
+    <button class="btn-cart" id="btnAbrirCarrinho">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+      </svg>
+      <span class="badge" id="badgeCount">0</span>
+    </button>
+    <a th:href="@{/login}" href="/login" class="btn-sair">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Sair
+    </a>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="produtos">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+    </svg>
+    Produtos
+  </button>
+  
+  <button class="tab-btn" data-tab="pedidos">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <path d="M16 10a4 4 0 0 1-8 0"/>
+    </svg>
+    Meus Pedidos
+  </button>
+</div>
+
+<main>
+  <!-- PRODUTOS -->
+  <section class="section active" id="tab-produtos">
+    <div class="grid" th:if="${listaProduto != null and !listaProduto.isEmpty()}">
+      <div class="card" th:each="p : ${listaProduto}">
+        <div class="card-icon">💧</div>
+        <div class="card-body">
+          <div class="card-name" th:text="${p.nome}">Produto</div>
+          <div class="card-desc" th:text="${p.descricao}">Descrição</div>
+          <div class="card-footer">
+            <span class="card-price" th:text="'R$ ' + ${#numbers.formatDecimal(p.preco,1,'POINT',2,'COMMA')}">R$ 0,00</span>
+            <button class="btn-add"
+              th:data-id="${p.id}"
+              th:data-nome="${p.nome}"
+              th:data-preco="${p.preco}"
+              onclick="adicionarCarrinho(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+              </svg>
+              Adicionar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="empty-state" th:if="${listaProduto == null or listaProduto.isEmpty()}">
+      <div style="font-size:3rem">📦</div>
+      <p>Nenhum produto disponível.</p>
+    </div>
+  </section>
+
+  <!-- MEUS PEDIDOS -->
+  <section class="section" id="tab-pedidos">
+    <div class="pedidos-lista" th:if="${listaPedido != null and !listaPedido.isEmpty()}">
+      <div class="pedido-card" th:each="ped : ${listaPedido}">
+        <div class="pedido-header">
+          <div>
+            <div class="pedido-id" th:text="'Pedido #' + ${ped.idPedido}">Pedido #--</div>
+            <div class="pedido-data" th:text="${ped.dataPedido}">--/--/----</div>
+          </div>
+          <div style="text-align:right">
+            <div class="pedido-total-label">Total</div>
+            <div class="pedido-total-val" th:text="'R$ ' + ${#numbers.formatDecimal(ped.valorTotal,1,'POINT',2,'COMMA')}">R$ 0,00</div>
+          </div>
+        </div>
+        <div class="pedido-itens" th:if="${ped.produtos != null and !ped.produtos.isEmpty()}">
+          <div class="pedido-itens-label">Itens:</div>
+          <span class="pedido-item-pill" th:each="prod : ${ped.produtos}" th:text="${prod}">Produto</span>
+        </div>
+      </div>
+    </div>
+    <div class="empty-state" th:if="${listaPedido == null or listaPedido.isEmpty()}">
+      <div style="font-size:3rem">📋</div>
+      <p>Você ainda não realizou nenhum pedido.</p>
+    </div>
+  </section>
+</main>
+
+<!-- Modal Carrinho -->
+<div class="overlay" id="overlayCarrinho">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>🛒 Carrinho</h2>
+      <button class="btn-fechar" id="btnFecharCarrinho">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="carrinho-vazio" id="carrinhoVazio">🛒 Carrinho vazio</div>
+      <div id="carrinhoItens"></div>
+    </div>
+    <div class="modal-footer" id="carrinhoFooter" style="display:none">
+      <div class="modal-total">
+        <span>Total:</span>
+        <strong id="totalCarrinho">R$ 0,00</strong>
+      </div>
+      <!-- Formulário que envia ao backend -->
+      <form id="formPedido" method="post" th:action="@{/pedido/finalizar}" action="/pedido/finalizar">
+        <input type="hidden" name="idCliente" id="fIdCliente"
+               th:value="${idCliente != null ? idCliente : 0}"
+               value="0"/>
+        <input type="hidden" name="total" id="fTotal"/>
+        <div id="fItens"></div>
+        <!-- ALTERAÇÃO 2: ao clicar em Finalizar, exibe mensagem de sucesso -->
+        <button type="submit" class="btn-finalizar" id="btnFinalizar">✅ Finalizar Pedido</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ Produto adicionado!</div>
+
+
+<div class="toast-sucesso" id="toastSucesso">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0">
+    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <path d="M16 10a4 4 0 0 1-8 0"/>
+  </svg>
+  Pedido concluído com sucesso!
+  <button class="toast-sucesso-fechar" id="btnFecharToastSucesso" aria-label="Fechar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  </button>
+</div>
+
+<script>
+  
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.section').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      document.getElementById('tab-' + b.dataset.tab).classList.add('active');
+    });
+  });
+
+  let carrinho = [];
+
+  function adicionarCarrinho(btn) {
+    const id    = btn.dataset.id;
+    const nome  = btn.dataset.nome;
+    const preco = parseFloat(btn.dataset.preco);
+    const idx   = carrinho.findIndex(i => i.id === id);
+    if (idx >= 0) carrinho[idx].quantidade++;
+    else carrinho.push({ id, nome, preco, quantidade: 1 });
+    renderCarrinho();
+    showToast('✓ ' + nome + ' adicionado!');
+  }
+
+  function renderCarrinho() {
+    const itensEl  = document.getElementById('carrinhoItens');
+    const vazioEl  = document.getElementById('carrinhoVazio');
+    const footerEl = document.getElementById('carrinhoFooter');
+    const badgeEl  = document.getElementById('badgeCount');
+    const total    = carrinho.reduce((s,i) => s + i.preco * i.quantidade, 0);
+    const qtd      = carrinho.reduce((s,i) => s + i.quantidade, 0);
+
+    badgeEl.textContent = qtd;
+    badgeEl.classList.toggle('show', qtd > 0);
+
+    if (carrinho.length === 0) {
+      vazioEl.style.display  = 'block';
+      itensEl.innerHTML      = '';
+      footerEl.style.display = 'none';
+      return;
+    }
+
+    vazioEl.style.display  = 'none';
+    footerEl.style.display = 'block';
+    document.getElementById('totalCarrinho').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+
+    document.getElementById('fIdCliente').value = document.getElementById('idCliente').value;
+    document.getElementById('fTotal').value     = total.toFixed(2);
+
+    let fItensHTML = '';
+    carrinho.forEach(item => {
+      fItensHTML += `<input type="hidden" name="idProduto"  value="${item.id}"/>`;
+      fItensHTML += `<input type="hidden" name="quantidade" value="${item.quantidade}"/>`;
+      fItensHTML += `<input type="hidden" name="preco"      value="${item.preco}"/>`;
+    });
+    document.getElementById('fItens').innerHTML = fItensHTML;
+
+    itensEl.innerHTML = carrinho.map((item, idx) => `
+      <div class="carrinho-item">
+        <div class="ci-info">
+          <div class="ci-nome">${item.nome}</div>
+          <div class="ci-preco">R$ ${item.preco.toFixed(2).replace('.',',')}</div>
+          <div class="qty-wrap">
+            <button class="btn-qty" onclick="alterarQty(${idx},-1)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <span class="qty-num">${item.quantidade}</span>
+            <button class="btn-qty" onclick="alterarQty(${idx},1)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="btn-rm" onclick="removerItem(${idx})">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="ci-sub">R$ ${(item.preco*item.quantidade).toFixed(2).replace('.',',')}</div>
+      </div>
+    `).join('');
+  }
+
+  function alterarQty(idx, delta) {
+    carrinho[idx].quantidade += delta;
+    if (carrinho[idx].quantidade <= 0) carrinho.splice(idx, 1);
+    renderCarrinho();
+  }
+  function removerItem(idx) { carrinho.splice(idx, 1); renderCarrinho(); }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  
+  document.getElementById('formPedido').addEventListener('submit', function(e) {
+    e.preventDefault();
+    document.getElementById('overlayCarrinho').classList.remove('open');
+    document.getElementById('toastSucesso').classList.add('show');
+    carrinho = [];
+    setTimeout(() => renderCarrinho(), 100);
+  });
+
+  document.getElementById('btnFecharToastSucesso').addEventListener('click', function() {
+    document.getElementById('toastSucesso').classList.remove('show');
+    document.getElementById('formPedido').submit();
+  });
+
+  document.getElementById('btnAbrirCarrinho').addEventListener('click', () => {
+    document.getElementById('overlayCarrinho').classList.add('open');
+  });
+  document.getElementById('btnFecharCarrinho').addEventListener('click', () => {
+    document.getElementById('overlayCarrinho').classList.remove('open');
+  });
+  document.getElementById('overlayCarrinho').addEventListener('click', e => {
+    if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
+  });
+</script>
+</body>
+</html>

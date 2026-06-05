@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Isamar – Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    body { min-height:100vh; background:#f1f5fb; font-family:'Nunito',sans-serif; color:#1a2340; }
+
+    header {
+      background:#2563eb; color:#fff; padding:12px 24px;
+      display:flex; align-items:center; justify-content:space-between;
+      box-shadow:0 2px 10px rgba(37,99,235,.35);
+      position:sticky; top:0; z-index:100;
+    }
+    .header-left { display:flex; align-items:center; gap:10px; }
+    .header-logo {
+      width:36px; height:36px; background:rgba(255,255,255,.2);
+      border-radius:10px; display:flex; align-items:center; justify-content:center;
+    }
+    .header-logo svg { width:20px; height:20px; }
+    .header-title h1 { font-size:1rem; font-weight:800; line-height:1.2; }
+    .header-title p  { font-size:.72rem; opacity:.8; }
+    .btn-sair {
+      background:rgba(255,255,255,.2); border:none; border-radius:10px;
+      padding:8px 14px; cursor:pointer; color:#fff;
+      font-family:'Nunito',sans-serif; font-size:.85rem; font-weight:700;
+      display:flex; align-items:center; gap:6px;
+      transition:background .2s; text-decoration:none;
+    }
+    .btn-sair:hover { background:rgba(255,255,255,.3); }
+    .btn-sair svg { width:16px; height:16px; }
+
+    .tabs {
+      background:#fff; border-bottom:1.5px solid #e2e8f0;
+      padding:0 24px; display:flex; gap:4px;
+    }
+    .tab-btn {
+      padding:12px 16px; background:none; border:none;
+      border-bottom:2.5px solid transparent;
+      font-family:'Nunito',sans-serif; font-size:.88rem; font-weight:700;
+      color:#718096; cursor:pointer; display:flex; align-items:center; gap:6px;
+      transition:color .2s, border-color .2s;
+    }
+    .tab-btn svg { width:16px; height:16px; }
+    .tab-btn.active { color:#2563eb; border-bottom-color:#2563eb; }
+    .tab-btn:hover:not(.active) { color:#1a2340; }
+
+    main { max-width:1100px; margin:0 auto; padding:28px 24px; }
+    .section { display:none; }
+    .section.active { display:block; }
+
+    /* Metrics */
+    .metrics {
+      display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr));
+      gap:16px; margin-bottom:24px;
+    }
+    .metric-card {
+      border-radius:14px; padding:18px 20px; color:#fff;
+      box-shadow:0 4px 16px rgba(0,0,0,.12); display:flex; flex-direction:column;
+    }
+    .metric-card.blue   { background:linear-gradient(135deg,#3b82f6,#2563eb); }
+    .metric-card.green  { background:linear-gradient(135deg,#22c55e,#16a34a); }
+    .metric-card.purple { background:linear-gradient(135deg,#a855f7,#9333ea); }
+    .metric-card.orange { background:linear-gradient(135deg,#f97316,#ea580c); }
+    .metric-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+    .metric-header svg { width:28px; height:28px; opacity:.8; }
+    .metric-trend { font-size:.72rem; opacity:.85; font-weight:700; }
+    .metric-label { font-size:.72rem; opacity:.9; margin-bottom:4px; }
+    .metric-value { font-size:1.7rem; font-weight:800; }
+
+    /* Summary */
+    .summary-row {
+      display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr));
+      gap:16px; margin-bottom:8px;
+    }
+    .summary-card {
+      background:#fff; border-radius:14px;
+      box-shadow:0 2px 12px rgba(0,0,0,.07); padding:18px 20px;
+    }
+    .summary-card h3 { font-size:.9rem; font-weight:800; margin-bottom:14px; }
+    .s-item {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:6px 0; font-size:.82rem;
+    }
+    .s-item + .s-item { border-top:1px solid #f1f5fb; }
+    .s-item span   { color:#4a5568; }
+    .s-item strong { font-weight:800; }
+    .c-blue   { color:#2563eb; }
+    .c-green  { color:#16a34a; }
+    .c-orange { color:#ea580c; }
+    .c-red    { color:#e53e3e; }
+
+    .rank-item {
+      display:flex; align-items:center; justify-content:space-between;
+      border-radius:8px; padding:8px 10px; margin-bottom:6px;
+    }
+    .rank-item.r1 { background:#eff6ff; }
+    .rank-item.r2 { background:#f0fdf4; }
+    .rank-item.r3 { background:#faf5ff; }
+    .rank-name { font-size:.8rem; font-weight:700; }
+    .rank-qty  { font-size:.72rem; color:#718096; }
+    .rank-pos  { font-size:1.2rem; font-weight:800; }
+    .rank-pos.r1 { color:#2563eb; }
+    .rank-pos.r2 { color:#16a34a; }
+    .rank-pos.r3 { color:#9333ea; }
+
+    /* Table */
+    .table-header {
+      display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;
+    }
+    .table-header h2 { font-size:1rem; font-weight:800; }
+    .btn-action {
+      background:#2563eb; color:#fff; border:none; border-radius:8px; padding:8px 16px;
+      font-family:'Nunito',sans-serif; font-size:.82rem; font-weight:700;
+      cursor:pointer; display:flex; align-items:center; gap:6px; transition:background .2s;
+    }
+    .btn-action:hover { background:#1d4ed8; }
+    .btn-action svg { width:15px; height:15px; }
+    .table-wrap {
+      background:#fff; border-radius:14px;
+      box-shadow:0 2px 12px rgba(0,0,0,.07); overflow:hidden;
+    }
+    table { width:100%; border-collapse:collapse; }
+    thead { background:#f8fafd; border-bottom:1.5px solid #e2e8f0; }
+    thead th {
+      padding:12px 16px; text-align:left;
+      font-size:.76rem; font-weight:800; color:#4a5568;
+      text-transform:uppercase; letter-spacing:.5px;
+    }
+    tbody tr { border-bottom:1px solid #f1f5fb; }
+    tbody tr:last-child { border-bottom:none; }
+    tbody tr:hover { background:#f8fafd; }
+    tbody td { padding:12px 16px; font-size:.84rem; vertical-align:middle; }
+
+    .avatar {
+      width:32px; height:32px; background:#eff6ff; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.8rem; font-weight:800; color:#2563eb;
+      margin-right:8px; flex-shrink:0;
+    }
+    .user-cell { display:flex; align-items:center; }
+    .badge-status {
+      display:inline-flex; align-items:center;
+      padding:3px 10px; border-radius:20px;
+      font-size:.72rem; font-weight:800; text-transform:uppercase;
+    }
+    .badge-status.ativo   { background:#f0fdf4; color:#16a34a; }
+    .badge-status.inativo { background:#f1f5fb; color:#718096; }
+
+    .btn-edit, .btn-del, .btn-toggle {
+      border:none; border-radius:7px; padding:5px 10px; cursor:pointer;
+      font-family:'Nunito',sans-serif; font-size:.76rem; font-weight:700;
+      display:inline-flex; align-items:center; gap:4px;
+      transition:background .2s; text-decoration:none;
+    }
+    .btn-edit   { background:#eff6ff; color:#2563eb; }
+    .btn-edit:hover { background:#dbeafe; }
+    .btn-del    { background:#fff5f5; color:#e53e3e; }
+    .btn-del:hover { background:#fee2e2; }
+    .btn-toggle { background:#fff5f5; color:#e53e3e; }
+    .btn-toggle.ativar { background:#f0fdf4; color:#16a34a; }
+    .btn-edit svg, .btn-del svg, .btn-toggle svg { width:12px; height:12px; }
+    .actions { display:flex; gap:6px; }
+    .stock-low { color:#e53e3e; font-weight:700; }
+    .empty-row td { text-align:center; padding:40px; color:#a0aec0; font-size:.88rem; }
+
+    /* Modal */
+    .overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,.5);
+      display:none; align-items:center; justify-content:center;
+      padding:16px; z-index:200;
+    }
+    .overlay.open { display:flex; }
+    .modal {
+      background:#fff; border-radius:18px; width:100%; max-width:460px;
+      overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.2);
+    }
+    .modal-header {
+      padding:16px 20px; border-bottom:1.5px solid #e2e8f0;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .modal-header h2 { font-size:1rem; font-weight:800; }
+    .btn-fechar {
+      background:#f1f5fb; border:none; border-radius:8px;
+      width:32px; height:32px; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      color:#4a5568; transition:background .2s;
+    }
+    .btn-fechar:hover { background:#e2e8f0; }
+    .btn-fechar svg { width:16px; height:16px; }
+    .modal-body { padding:20px; display:flex; flex-direction:column; gap:14px; }
+    .field { display:flex; flex-direction:column; gap:5px; }
+    .field label { font-size:.78rem; font-weight:700; color:#4a5568; }
+    .field input, .field select, .field textarea {
+      width:100%; padding:10px 12px; border:1.8px solid #e2e8f0; border-radius:10px;
+      font-size:.88rem; font-family:'Nunito',sans-serif; color:#1a2340; background:#f8fafd;
+      transition:border-color .2s, box-shadow .2s; outline:none;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.13); background:#fff;
+    }
+    .field textarea { resize:none; }
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .modal-footer {
+      padding:14px 20px; border-top:1.5px solid #e2e8f0;
+      display:flex; justify-content:flex-end; gap:8px;
+    }
+    .btn-cancel {
+      background:#f1f5fb; color:#4a5568; border:none; border-radius:10px;
+      padding:10px 18px; font-family:'Nunito',sans-serif;
+      font-size:.88rem; font-weight:700; cursor:pointer; transition:background .2s;
+    }
+    .btn-cancel:hover { background:#e2e8f0; }
+    .btn-save {
+      background:#2563eb; color:#fff; border:none; border-radius:10px;
+      padding:10px 20px; font-family:'Nunito',sans-serif;
+      font-size:.88rem; font-weight:800; cursor:pointer;
+      transition:background .2s, transform .1s;
+    }
+    .btn-save:hover  { background:#1d4ed8; }
+    .btn-save:active { transform:scale(.97); }
+
+    @media(max-width:600px) {
+      main { padding:20px 16px; }
+      .metrics { grid-template-columns:1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-left">
+      <img src="/img/logo.jpg" alt="Isamar" style="height:44px; width:auto;"/>
+      <div class="header-title">
+        <h1>Isamar – Admin</h1>
+        <p>Painel Administrativo</p>
+      </div>
+    </div>
+    <a th:href="@{/login}" href="/login" class="btn-sair">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Sair
+    </a>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn" data-tab="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      Dashboard
+    </button>
+    <button class="tab-btn" data-tab="funcionarios">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      Funcionários
+    </button>
+    <!-- Ícone de sacola para Produtos -->
+    <button class="tab-btn" data-tab="produtos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <path d="M16 10a4 4 0 0 1-8 0"/>
+      </svg>
+      Produtos
+    </button>
+  </div>
+
+  <main>
+
+    <!-- DASHBOARD -->
+    <section class="section" id="tab-dashboard">
+      <div class="metrics">
+        <div class="metric-card blue">
+          <div class="metric-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"/>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <span class="metric-trend">Vendas</span>
+          </div>
+          <div class="metric-label">Faturamento Total</div>
+          <div class="metric-value"
+              th:text="'R$ ' + ${#numbers.formatDecimal(faturamentoTotal, 1, 'POINT', 2, 'COMMA')}">
+            R$ 0,00
+          </div>
+        </div>
+        <div class="metric-card green">
+          <div class="metric-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+            <span class="metric-trend">Total</span>
+          </div>
+          <div class="metric-label">Pedidos</div>
+          <div class="metric-value"
+               th:text="${listaPedido != null ? listaPedido.size() : 0}">0</div>
+        </div>
+        <div class="metric-card purple">
+          <div class="metric-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <span class="metric-trend">Cadastrados</span>
+          </div>
+          <div class="metric-label">Clientes</div>
+          <div class="metric-value"
+               th:text="${listaCliente != null ? listaCliente.size() : 0}">0</div>
+        </div>
+        <div class="metric-card orange">
+          <div class="metric-header">
+            <!-- Sacola também no card do dashboard -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+            <span class="metric-trend">Ativos</span>
+          </div>
+          <div class="metric-label">Produtos</div>
+          <div class="metric-value"
+               th:text="${listaProduto != null ? listaProduto.size() : 0}">0</div>
+        </div>
+      </div>
+
+      <div class="summary-row">
+        <div class="summary-card">
+          <h3>🏆 Produtos Mais Vendidos</h3>
+          <div th:if="${top3Produtos == null or top3Produtos.isEmpty()}">
+            <p style="color:#a0aec0;font-size:.85rem">Nenhum pedido ainda.</p>
+          </div>
+          <div th:each="entry, i : ${top3Produtos}">
+            <div class="rank-item" th:classappend="${i.index == 0} ? 'r1' : (${i.index == 1} ? 'r2' : 'r3')">
+              <div>
+                <div class="rank-name" th:text="${entry.key}">Produto</div>
+                <div class="rank-qty"  th:text="${entry.value} + ' unidades vendidas'">0 unidades vendidas</div>
+              </div>
+              <span class="rank-pos"
+                    th:classappend="${i.index == 0} ? 'r1' : (${i.index == 1} ? 'r2' : 'r3')"
+                    th:text="${i.index + 1} + 'º'">1º</span>
+            </div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <h3>📦 Estoque</h3>
+          <div class="s-item">
+            <span>Unidades em Estoque</span>
+            <strong class="c-green"
+              th:text="${listaProduto != null ? #aggregates.sum(listaProduto.![estoque]) : 0}">0</strong>
+          </div>
+        </div>
+        <div class="summary-card">
+          <h3>👥 Equipe</h3>
+          <div class="s-item"><span>Funcionários</span><strong th:text="${listaFuncionario != null ? listaFuncionario.size() : 0}">0</strong></div>
+          <div class="s-item"><span>Clientes</span><strong class="c-blue" th:text="${listaCliente != null ? listaCliente.size() : 0}">0</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FUNCIONÁRIOS -->
+    <section class="section" id="tab-funcionarios">
+      <div class="table-header">
+        <h2>Gerenciar Funcionários</h2>
+        <button class="btn-action" onclick="abrirModalFunc()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Adicionar Funcionário
+        </button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th><th>Email</th><th>Telefone</th><th>Status</th><th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="empty-row" th:if="${listaFuncionario == null or listaFuncionario.isEmpty()}">
+              <td colspan="5">Nenhum funcionário cadastrado.</td>
+            </tr>
+            <tr th:each="func : ${listaFuncionario}">
+              <td>
+                <div class="user-cell">
+                  <div class="avatar" th:text="${func.nome != null ? func.nome.substring(0,1).toUpperCase() : '?'}">A</div>
+                  <span th:text="${func.nome}">Nome</span>
+                </div>
+              </td>
+              <td th:text="${func.email}">—</td>
+              <td th:text="${func.telefone}">—</td>
+              <td>
+                <span class="badge-status"
+                      th:classappend="${func.ativo} ? 'ativo' : 'inativo'"
+                      th:text="${func.ativo} ? 'Ativo' : 'Inativo'">—</span>
+              </td>
+              <td>
+                <div class="actions">
+                  <button class="btn-edit"
+                    th:data-id="${func.id}"
+                    th:data-nome="${func.nome}"
+                    th:data-telefone="${func.telefone}"
+                    th:data-cep="${func.cep}"
+                    th:data-email="${func.email}"
+                    th:data-ativo="${func.ativo}"
+                    onclick="editarFunc(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    Editar
+                  </button>
+                  <button class="btn-toggle"
+                    th:classappend="${!func.ativo} ? 'ativar'"
+                    th:text="${func.ativo} ? 'Desativar' : 'Ativar'"
+                    th:onclick="'toggleFunc(' + ${func.id} + ', ' + ${func.ativo} + ')'">—</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PRODUTOS -->
+    <section class="section" id="tab-produtos">
+      <div class="table-header">
+        <h2>Gerenciar Produtos</h2>
+        <button class="btn-action" onclick="abrirModalProd()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Adicionar Produto
+        </button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Produto</th><th>Preço</th><th>Estoque</th><th>Ações</th></tr>
+          </thead>
+          <tbody>
+            <tr class="empty-row" th:if="${listaProduto == null or listaProduto.isEmpty()}">
+              <td colspan="4">Nenhum produto cadastrado.</td>
+            </tr>
+            <tr th:each="p : ${listaProduto}">
+              <td>
+                <div style="font-weight:700" th:text="${p.nome}">Nome</div>
+                <div style="font-size:.74rem;color:#718096;margin-top:2px" th:text="${p.descricao}">Desc</div>
+              </td>
+              <td style="font-weight:800"
+                  th:text="'R$ ' + ${#numbers.formatDecimal(p.preco, 1, 'POINT', 2, 'COMMA')}">—</td>
+              <td>
+                <span th:classappend="${p.estoque < 10} ? 'stock-low'"
+                      th:text="${p.estoque} + ' un'">0 un</span>
+              </td>
+              <td>
+                <div class="actions">
+                  <button class="btn-edit"
+                    th:data-id="${p.id}"
+                    th:data-nome="${p.nome}"
+                    th:data-preco="${p.preco}"
+                    th:data-estoque="${p.estoque}"
+                    th:data-desc="${p.descricao}"
+                    onclick="editarProd(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    Editar
+                  </button>
+                  <a class="btn-del"
+                     th:href="@{/produto/remover(id=${p.id}, tab='produtos')}"
+                     onclick="return confirm('Deseja excluir este produto?')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
+                    </svg>
+                    Excluir
+                  </a>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal Funcionário -->
+  <div class="overlay" id="overlayFunc">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalFuncTitulo">Adicionar Funcionário</h2>
+        <button class="btn-fechar" onclick="fecharModal('overlayFunc')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <form method="post" id="formFunc">
+        <input type="hidden" name="id"      id="funcId"/>
+        <input type="hidden" name="perfil"  value="Funcionário"/>
+        <div class="modal-body">
+          <div class="field"><label>Nome</label>
+            <input type="text"     name="nome"      id="funcNome"     placeholder="Ex: João Silva" required/></div>
+          <div class="field"><label>Telefone</label>
+            <input type="text"     name="telefone"  id="funcTelefone" placeholder="(00) 00000-0000"/></div>
+          <div class="field"><label>CEP</label>
+            <input type="text"     name="cep"       id="funcCep"      placeholder="00000-000"/></div>
+          <div class="field"><label>Email</label>
+            <input type="email"    name="email"     id="funcEmail"    placeholder="joao@isamar.com" required/></div>
+          <div class="field"><label>Senha</label>
+            <input type="password" name="senha"     id="funcSenha"    placeholder="Digite a senha"/></div>
+          <div class="field"><label>Status</label>
+            <select name="ativo" id="funcAtivo">
+              <option value="true">Ativo</option>
+              <option value="false">Inativo</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="fecharModal('overlayFunc')">Cancelar</button>
+          <button type="submit" class="btn-save"   id="funcSaveBtn">Adicionar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Produto -->
+  <div class="overlay" id="overlayProd">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalProdTitulo">Adicionar Produto</h2>
+        <button class="btn-fechar" onclick="fecharModal('overlayProd')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <form method="post" id="formProd">
+        <input type="hidden" name="id" id="prodId"/>
+        <div class="modal-body">
+          <div class="field"><label>Nome do Produto</label>
+            <input type="text"   name="nome"      id="prodNome"    placeholder="Ex: Cloro Granulado 10kg" required/></div>
+          <div class="two-col">
+            <div class="field"><label>Preço (R$)</label>
+              <input type="number" step="0.01" name="preco"    id="prodPreco"   placeholder="0.00" required/></div>
+            <div class="field"><label>Estoque</label>
+              <input type="number" name="estoque"  id="prodEstoque" placeholder="0"/></div>
+          </div>
+          <div class="field"><label>Descrição</label>
+            <textarea name="descricao" id="prodDesc" rows="3" placeholder="Descreva o produto..."></textarea></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="fecharModal('overlayProd')">Cancelar</button>
+          <button type="submit" class="btn-save"   id="prodSaveBtn">Adicionar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ─── Persistência de aba via hash da URL ───────────────────────────────────
+    const TABS = ['dashboard', 'funcionarios', 'produtos'];
+
+    function ativarTab(nome) {
+      if (!TABS.includes(nome)) nome = 'dashboard';
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      const btn = document.querySelector('.tab-btn[data-tab="' + nome + '"]');
+      const sec = document.getElementById('tab-' + nome);
+      if (btn) btn.classList.add('active');
+      if (sec) sec.classList.add('active');
+    }
+
+    
+    function tabDoHash() {
+      return location.hash.replace('#', '') || 'dashboard';
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        location.hash = tab;   
+      });
+    });
+
+    window.addEventListener('hashchange', () => ativarTab(tabDoHash()));
+
+    
+    ativarTab(tabDoHash());
+    // ──────────────────────────────────────────────────────────────────────────
+
+    
+    function fecharModal(id) { document.getElementById(id).classList.remove('open'); }
+    document.querySelectorAll('.overlay').forEach(ov => {
+      ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('open'); });
+    });
+
+    
+    function abrirModalFunc() {
+      document.getElementById('modalFuncTitulo').textContent = 'Adicionar Funcionário';
+      document.getElementById('funcSaveBtn').textContent     = 'Adicionar';
+      document.getElementById('formFunc').action             = '/funcionario/salvar';
+      ['funcId','funcNome','funcTelefone','funcCep','funcEmail','funcSenha'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('funcAtivo').value = 'true';
+      document.getElementById('overlayFunc').classList.add('open');
+    }
+    function editarFunc(btn) {
+      document.getElementById('modalFuncTitulo').textContent = 'Editar Funcionário';
+      document.getElementById('funcSaveBtn').textContent     = 'Salvar Alterações';
+      document.getElementById('formFunc').action             = '/funcionario/editar';
+      document.getElementById('funcId').value       = btn.dataset.id;
+      document.getElementById('funcNome').value     = btn.dataset.nome;
+      document.getElementById('funcTelefone').value = btn.dataset.telefone;
+      document.getElementById('funcCep').value      = btn.dataset.cep;
+      document.getElementById('funcEmail').value    = btn.dataset.email;
+      document.getElementById('funcAtivo').value    = btn.dataset.ativo;
+      document.getElementById('overlayFunc').classList.add('open');
+    }
+    function toggleFunc(id, ativo) {
+      const acao = (ativo === 'true' || ativo === true) ? 'desativar' : 'ativar';
+      if (confirm('Deseja realmente ' + acao + ' este funcionário?')) {
+        
+        window.location.href = '/funcionario/toggle?id=' + id + '&tab=funcionarios';
+      }
+    }
+
+    
+    function abrirModalProd() {
+      document.getElementById('modalProdTitulo').textContent = 'Adicionar Produto';
+      document.getElementById('prodSaveBtn').textContent     = 'Adicionar';
+      document.getElementById('formProd').action             = '/produto/salvar';
+      ['prodId','prodNome','prodPreco','prodEstoque','prodDesc'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('overlayProd').classList.add('open');
+    }
+    function editarProd(btn) {
+      document.getElementById('modalProdTitulo').textContent = 'Editar Produto';
+      document.getElementById('prodSaveBtn').textContent     = 'Salvar Alterações';
+      document.getElementById('formProd').action             = '/produto/editar';
+      document.getElementById('prodId').value      = btn.dataset.id;
+      document.getElementById('prodNome').value    = btn.dataset.nome;
+      document.getElementById('prodPreco').value   = btn.dataset.preco;
+      document.getElementById('prodEstoque').value = btn.dataset.estoque;
+      document.getElementById('prodDesc').value    = btn.dataset.desc;
+      document.getElementById('overlayProd').classList.add('open');
+    }
+  </script>
+</body>
+</html>
